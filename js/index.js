@@ -1,8 +1,8 @@
 // DOM-элементы
 const fruitsList = document.querySelector('.fruits__list'); // список карточек
 const shuffleButton = document.querySelector('.shuffle__btn'); // кнопка перемешивания
-const minWeightInput = document.querySelector('.minweight__input');// поле с минимальным весом
-const maxWeightInput = document.querySelector('.maxweight__input');//  поле с максимальным весом
+const minWeightInput = document.querySelector('.minweight__input'); // поле с минимальным весом
+const maxWeightInput = document.querySelector('.maxweight__input'); //  поле с максимальным весом
 const filterButton = document.querySelector('.filter__btn'); // кнопка фильтрации
 const resetButton = document.querySelector('.reset__btn'); // кнопка сброса
 const sortKindLabel = document.querySelector('.sort__kind'); // поле с названием сортировки
@@ -78,12 +78,6 @@ const display = () => {
 // первая отрисовка карточек
 display();
 
-// кнопка сброса: отменяет перемешивание, фильтрацию, удаляет добавленные фрукты
-resetButton.addEventListener('click', () => {
-  fruits = JSON.parse(fruitsJSON);
-  display();
-});
-
 /*** ПЕРЕМЕШИВАНИЕ ***/
 
 // генерация случайного числа в заданном диапазоне
@@ -118,6 +112,8 @@ shuffleButton.addEventListener('click', () => {
 /*** ФИЛЬТРАЦИЯ ***/
 
 // фильтрация массива
+// взвешиваем фрукты: получаем данные, введённые пользователем в соответсвующие формы
+// записываем взвешенные фрукты в массив fruits
 const filterFruits = () => {
   let weighedFruits = fruits.filter(function(fruit) {
     return fruit.weight <= maxWeightInput.value && fruit.weight >= minWeightInput.value;
@@ -125,9 +121,13 @@ const filterFruits = () => {
   fruits = weighedFruits;
 };
 
+// кнопка фильтровать
 filterButton.addEventListener('click', () => {
-  let removeFruits=fruitsList.querySelectorAll('li.fruit__item');  
-  removeFruits.forEach((plant) => {fruitsList.removeChild(plant);}) 
+  // перезаписываем результат фильтрации исходным, возвращая его в работу,
+  // чтобы пользователь мог передумать и выставить новые значения min/max,
+  // не используя кнопку сброса
+  fruits = JSON.parse(fruitsJSON);
+  // сама фильтрация
   filterFruits();
   display();
 });
@@ -138,6 +138,7 @@ filterButton.addEventListener('click', () => {
 let sortKind = 'bubbleSort'; // инициализация состояния вида сортировки
 let sortTime = '-'; // инициализация состояния времени сортировки
 
+// распологаем цвета, как в радуге
 const comparisonColor = (fruit1, fruit2) => {
   const priorityColor = ['розово-красный','светло-коричневый','желтый','зеленый','фиолетовый'];
   const priority1 = priorityColor.indexOf(fruit1.color);
@@ -146,11 +147,15 @@ const comparisonColor = (fruit1, fruit2) => {
 };
 
 const sortAPI = {
+  // функция сортировки ПУЗЫРЬКОМ
   bubbleSort(arr, comparison) {
-    // TODO: допишите функцию сортировки пузырьком
+    // внешняя итерация по элементам
     for (let i = 0; i < (arr.length-1); i++) { 
+    // внутренняя итерация для перестановки элемента в конец массива
       for (let j = 0; j < (arr.length-1-i); j++) { 
+    // сравниваем элементы    
         if (comparison(arr[j], arr[j+1])) { 
+    // производим обмен элементов
             let temp = arr[j+1]; 
             arr[j+1] = arr[j]; 
             arr[j] = temp; 
@@ -159,15 +164,16 @@ const sortAPI = {
     } 
   },
 
+  // функция БЫСТРОЙ сортировки
   quickSort(arr, comparison) {
-     // Метод помогающий поменять местами элементы массива.
+     // функция обмена элементов
      function swap(items, firstIndex, secondIndex) {
-      const tmp = items[firstIndex];
+      const temp = items[firstIndex];
       items[firstIndex] = items[secondIndex];
-      items[secondIndex] = tmp;
+      items[secondIndex] = temp;
     }
 
-    // Метод позволяющий выполнить итерацию проверки Пивота, Грыницы и Текущего елемента.
+    // функция разделитель
     function partition(items, left, right) {
       let pivot = items[Math.floor((right + left) / 2)];
       let i = left;
@@ -189,7 +195,7 @@ const sortAPI = {
       return i;
     }
 
-    // реукурсивная функция для быстрой сортировки массива.
+    // алгоритм быстрой сортировки
     function qs (items, left, right) {
       let index;
 
@@ -206,12 +212,9 @@ const sortAPI = {
         }
       }
     }
-
     qs(arr);
   },
-    // TODO: допишите функцию быстрой сортировки
-
-
+    
   // выполняет сортировку и производит замер времени
   startSort(sort, arr, comparison) {
     const start = new Date().getTime();
@@ -225,37 +228,55 @@ const sortAPI = {
 sortKindLabel.textContent = sortKind;
 sortTimeLabel.textContent = sortTime;
 
+// кнопка сменить алгоритм сортировки:
+// переключает значение sortKind между 'bubbleSort' / 'quickSort'
 sortChangeButton.addEventListener('click', () => {
   sortKind = sortKind==='bubbleSort'? 'quickSort':'bubbleSort';
   sortKindLabel.textContent = sortKind;
-  
-  // TODO: переключать значение sortKind между 'bubbleSort' / 'quickSort'
 });
 
+// кнопка сортировать
 sortActionButton.addEventListener('click', () => {
-  // TODO: вывести в sortTimeLabel значение 'sorting...'
+  // выводим в sortTimeLabel значение 'sorting...'
   sortTimeLabel.textContent = 'sorting...';
   const sort = sortAPI[sortKind];
   sortAPI.startSort(sort, fruits, comparisonColor);
   display();
-  // TODO: вывести в sortTimeLabel значение sortTime
+  // выводим в sortTimeLabel значение sortTime
   sortTimeLabel.textContent = sortTime;
 });
 
 /*** ДОБАВИТЬ ФРУКТ ***/
 
+// кнопка добавить фрукт
+// создаём карточку нового фрукта, получая значения из форм kindInput, colorInput, weightInput
 addActionButton.addEventListener('click', () => {
-  // TODO: создание и добавление нового фрукта в массив fruits
-  // необходимые значения берем из kindInput, colorInput, weightInput
+  
+  // проверка пустых форм
   if (kindInput.value != '' && colorInput.value != '' && weightInput.value != '') {
     let obj = {};
     obj["kind"] = kindInput.value;
     obj["color"] = colorInput.value;
     obj["weight"] = weightInput.value;
     fruits.push(obj);
+    // очищаем поля, чтобы перед добавлением нового фрукта пользователю не пришлось стирать данные вручную
+    kindInput.value = '';
+    colorInput.value = '';
+    weightInput.value = '';
       display();
       } else {
-    alert('Пожалуйста, проверьте правильность заполнения полей');
+    alert('Пожалуйста, проверьте правильность заполнения полей'); // предупреждение с просьбой заполнить формы
       }
   display();
+});
+
+// кнопка сброса: отменяет перемешивание, фильтрацию, удаляет добавленные фрукты, очищает все поля
+resetButton.addEventListener('click', () => {
+  fruits = JSON.parse(fruitsJSON);
+  display();
+  maxWeightInput.value = '';
+  minWeightInput.value = '';
+  kindInput.value = '';
+  colorInput.value = '';
+  weightInput.value = '';
 });
