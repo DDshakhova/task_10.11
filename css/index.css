@@ -132,6 +132,22 @@ main {
   background: #cd853f;
 }
 
+.fruit_navy {
+  background:darkblue;
+}
+
+.fruit_red {
+  background: red;
+}
+
+.fruit_blue {
+  background: lightblue;
+}
+
+.fruit_orange{
+  background: orange;
+}
+/* для новой карточки с не зарегистрированным цветом */
 .fruit_black {
   background: black;
 }
